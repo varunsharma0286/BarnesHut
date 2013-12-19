@@ -1,0 +1,40 @@
+#!/bin/sh
+#SBATCH --partition=general-compute
+#SBATCH --time=02:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=4
+#SBATCH --job-name="serial_mp"
+#SBATCH --output=serial_mp.out
+#SBATCH --mail-user=vsharma7@buffalo.edu
+#SBATCH --mail-type=ALL
+#SBATCH --constraint=CPU-L5630
+#SABTCH --devtype=IB
+#Specifies that the job will be requeued after a node failure.
+#The default is that the job will not be requeued.
+
+echo "SLURM_JOB_ID="$SLURM_JOB_ID
+echo "SLURM_JOB_NODELIST"=$SLURM_JOB_NODELIST
+echo "SLURM_NNODES"=$SLURM_NNODES
+echo "SLURMTMPDIR="$SLURMTMPDIR
+
+cd $SLURM_SUBMIT_DIR
+echo "working directory = "$SLURM_SUBMIT_DIR
+
+module load intel/13.0
+#module load intel-mpi/4.1.0
+module list
+ulimit -s unlimited
+#
+
+echo "Launch BarnesHut for 1 cores"
+NPROCS=`srun --nodes=${SLURM_NNODES} bash -c 'hostname' |wc -l`
+echo NPROCS=$NPROCS
+#export I_MPI_DEBUG=4
+#export I_MPI_PMI_LIBRARY=/usr/lib64/libpmi.so
+export OMP_NUM_THREADS=1
+
+./Barnes 100000 100 > serial_mp.txt
+
+#
+echo "All Done!"
+
